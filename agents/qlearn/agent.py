@@ -1,0 +1,92 @@
+# coding=utf8
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from agents.agent import AbstractAgent
+import logging
+import config
+
+logger = logging.getLogger('rl.agent')
+FLAGS = config.flags.FLAGS
+
+
+class Agent(AbstractAgent):
+
+    def __init__(self, env):
+        super(AbstractAgent, self).__init__(env)
+        logger.info("Q-Learning Agent")
+
+        self.action_dim = env.action_space.n
+        self.train_step = FLAGS.train_step
+        self.test_step = FLAGS.test_step
+
+    def learn(self):
+        logger.debug("Start Learn")
+
+        global_step = 0
+        episode_num = 0
+
+        while global_step < self.train_step:
+
+            episode_num += 1
+            step_in_ep = 0
+
+            obs = self.env.reset()  # Reset environment
+            total_reward = 0
+            done = False
+
+            while not done:
+
+                global_step += 1
+                step_in_ep += 1
+
+                action = self.get_action(obs, global_step)
+
+                obs_next, reward, done, info = self.env.step(action)
+
+                self.train_agent(obs, action, reward, obs_next, done)
+
+                if FLAGS.gui:
+                    self.env.render()
+
+                obs = obs_next
+                total_reward += reward
+
+    def test(self, global_step=0):
+        logger.debug("Test step: {}".format(global_step))
+
+        global_step = 0
+        episode_num = 0
+        total_reward = 0
+
+        while global_step < self.test_step:
+
+            episode_num += 1
+            step_in_ep = 0
+
+            obs = self.env.reset()  # Reset environment
+            done = False
+
+            while not done:
+
+                global_step += 1
+                step_in_ep += 1
+
+                action = self.get_action(obs, global_step, False)
+
+                obs_next, reward, done, info = self.env.step(action)
+
+                if FLAGS.gui:
+                    self.env.render()
+
+                obs = obs_next
+                total_reward += reward
+
+        print("[train_ep: {}, total reward: {}]".format(episode_num, total_reward))
+
+    def get_action(self, obs, global_step, train=True):
+        return self.env.action_space.sample()
+
+    def train_agent(self):
+        # 최적의 액션 선택 + Exploration (Epsilon greedy)
+        return None
