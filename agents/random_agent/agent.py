@@ -41,7 +41,7 @@ class Agent(AbstractAgent):
                 global_step += 1
                 action = self.get_action()
 
-                obs_next, reward, done, info = self.env.step(action)
+                _, reward, done, _ = self.env.step(action)
 
                 if FLAGS.gui:
                     self.env.render()
