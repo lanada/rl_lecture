@@ -13,7 +13,7 @@ FLAGS = config.flags.FLAGS
 class Agent(AbstractAgent):
 
     def __init__(self, env):
-        super(AbstractAgent, self).__init__(env)
+        super(Agent, self).__init__(env)
         logger.info("Keyboard Agent")
 
         self.action_dim = env.action_space.n
@@ -38,7 +38,7 @@ class Agent(AbstractAgent):
             done = False
 
             while not done:
-
+                global_step += 1
                 action = self.get_action()
 
                 obs_next, reward, done, info = self.env.step(action)
@@ -48,7 +48,7 @@ class Agent(AbstractAgent):
 
                 total_reward += reward
 
-        print("[train_ep: {}, total reward: {}]".format(episode_num, total_reward))
+        print("[ train_ep: {}, total reward: {} ]".format(episode_num, total_reward))
 
     def get_action(self):
         # 키보드 인풋 받을 것

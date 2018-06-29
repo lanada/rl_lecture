@@ -14,7 +14,7 @@ class Agent(AbstractAgent):
 
     def __init__(self, env):
         super(Agent, self).__init__(env)
-        logger.info("Q-Learning Agent")
+        logger.info("DQN Agent")
 
         self.action_dim = env.action_space.n
         self.model = self.set_model()
@@ -49,7 +49,7 @@ class Agent(AbstractAgent):
 
                 action = self.get_action(obs, global_step)
 
-                obs_next, reward, done, _ = self.env.step(action)
+                obs_next, reward, done, info = self.env.step(action)
 
                 self.train_agent(obs, action, reward, obs_next, done)
 
@@ -81,7 +81,7 @@ class Agent(AbstractAgent):
 
                 action = self.get_action(obs, global_step, False)
 
-                obs_next, reward, done, _ = self.env.step(action)
+                obs_next, reward, done, info = self.env.step(action)
 
                 if FLAGS.gui:
                     self.env.render()

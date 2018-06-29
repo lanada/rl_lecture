@@ -12,8 +12,8 @@ flags.DEFINE_string("env", "CartPole-v0", "Name of environment")
 flags.DEFINE_string("agent", "keyboard_agent", "Name of agent")
 flags.DEFINE_boolean("train", True, "Train or test")
 
-flags.DEFINE_integer("train_step", 10000, "Number of training step")
-flags.DEFINE_integer("test_step", 1000, "Number of testing step")
+flags.DEFINE_integer("train_step", 100, "Number of training step")
+flags.DEFINE_integer("test_step", 100, "Number of testing step")
 flags.DEFINE_integer("seed", 0, "Random seed number")
 
 flags.DEFINE_string("folder", "default", "Folder name for result files")

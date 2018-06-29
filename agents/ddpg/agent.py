@@ -14,7 +14,7 @@ class Agent(AbstractAgent):
 
     def __init__(self, env):
         super(Agent, self).__init__(env)
-        logger.info("Q-Learning Agent")
+        logger.info("DDPG Agent")
 
         self.action_dim = env.action_space.n
         self.model = self.set_model()
