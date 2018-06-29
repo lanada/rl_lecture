@@ -3,6 +3,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from agents.agent import AbstractAgent
+from agents.common.input import observation_dim
 import logging
 import config
 
@@ -17,6 +18,7 @@ class Agent(AbstractAgent):
         logger.info("Q-Learning Agent")
 
         self.action_dim = env.action_space.n
+        self.obs_dim = observation_dim(env.observation_space)
         self.model = self.set_model()
 
         self.train_step = FLAGS.train_step

@@ -9,7 +9,7 @@ flags = tf.flags
 
 flags.DEFINE_string("env", "CartPole-v0", "Name of environment")
 
-flags.DEFINE_string("agent", "keyboard_agent", "Name of agent")
+flags.DEFINE_string("agent", "random_agent", "Name of agent")
 flags.DEFINE_boolean("train", True, "Train or test")
 
 flags.DEFINE_integer("train_step", 100, "Number of training step")

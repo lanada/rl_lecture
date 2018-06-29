@@ -3,6 +3,8 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from agents.agent import AbstractAgent
+from agents.common.input import observation_dim
+from agents.common.replay_buffer import ReplayBuffer
 import logging
 import config
 
@@ -17,7 +19,9 @@ class Agent(AbstractAgent):
         logger.info("DDPG Agent")
 
         self.action_dim = env.action_space.n
+        self.obs_dim = observation_dim(env.observation_space)
         self.model = self.set_model()
+        self.replay_buffer = ReplayBuffer() 
 
         self.train_step = FLAGS.train_step
         self.test_step = FLAGS.test_step
@@ -96,5 +100,12 @@ class Agent(AbstractAgent):
         return self.env.action_space.sample()
 
     def train_agent(self, obs, action, reward, obs_next, done):
+        """
+        How to use replay buffer 
         
+        1. Put sample: make tuple and put it to replay buffer #
+         - self.replay_buffer.add_to_memory((s, a, r, s_, done))
+        2. Get sample
+         - minibatch = self.replay_buffer.sample_from_memory()
+        """
         return None

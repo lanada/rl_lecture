@@ -3,6 +3,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from agents.agent import AbstractAgent
+from agents.common.input import observation_dim
 import logging
 import config
 
@@ -14,9 +15,10 @@ class Agent(AbstractAgent):
 
     def __init__(self, env):
         super(Agent, self).__init__(env)
-        logger.info("Keyboard Agent")
+        logger.info("Random Agent")
 
         self.action_dim = env.action_space.n
+        self.obs_dim = observation_dim(env.observation_space)
         self.train_step = FLAGS.train_step
         self.test_step = FLAGS.test_step
 
