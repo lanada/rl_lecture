@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf8
 
 import numpy as np
@@ -22,7 +21,11 @@ class DDPG:
     def __init__(self, sess, state_dim, action_dim, action_max, action_min):
         
         self.sess = sess
-        self.state_dim, self.action_dim, self.action_max, self.action_min = state_dim, action_dim, float(action_max), float(action_min)
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.action_max = float(action_max)
+        self.action_min = float(action_min)
+
         self.state_ph = tf.placeholder(dtype=tf.float32, shape = [None, self.state_dim])
         self.reward_ph = tf.placeholder(dtype=tf.float32, shape = [None])
         self.next_state_ph = tf.placeholder(dtype=tf.float32, shape = [None, self.state_dim])

@@ -33,7 +33,7 @@ class Agent(AbstractAgent):
         self.action_max = env.action_space.high ### KH: DDPG action bound
         self.action_min = env.action_space.low  ### KH: DDPG action bound
         self.model = self.set_model()
-        self.replay_buffer = ReplayBuffer() 
+        self.replay_buffer = ReplayBuffer(minibatch_size=minibatch_size) 
 
         self.train_step = FLAGS.train_step
         self.test_step = FLAGS.test_step
@@ -119,7 +119,7 @@ class Agent(AbstractAgent):
        
 
     def get_action(self, obs, global_step, train=True):
-        # 최적의 액션 선택 + Exploration (Epsilon greedy)   
+        # 최적의 액션 선택 + Exploration (Epsilon greedy)                                   
 
         action = self.model.choose_action(obs)
 
@@ -132,14 +132,6 @@ class Agent(AbstractAgent):
         return action
 
     def train_agent(self, obs, action, reward, obs_next, done):
-        """
-        How to use replay buffer
-        
-        1. Put sample: make tuple and put it to replay buffer #
-         - self.replay_buffer.add_to_memory((s, a, r, s_, done))
-        2. Get sample
-         - minibatch = self.replay_buffer.sample_from_memory()
-        """
 
         self.replay_buffer.add_to_memory((obs, action, reward, obs_next, done))
 
