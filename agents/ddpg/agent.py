@@ -9,6 +9,7 @@ from agents.common.input import observation_dim
 from agents.common.input import action_dim
 from agents.common.replay_buffer import ReplayBuffer
 from agents.ddpg.DDPG_Network import DDPG
+# from agents.ddpg.DDPG_CNN import DDPG
 import logging
 import config
 
@@ -64,7 +65,7 @@ class Agent(AbstractAgent):
             total_reward = 0
             done = False
 
-            while (not done and step_in_ep < max_step_per_episode): ### KH: reset every 200 steps
+            while (not done and step_in_ep < max_step_per_episode and global_step < self.train_step): ### KH: reset every 200 steps
 
                 global_step += 1
                 step_in_ep += 1
@@ -99,7 +100,7 @@ class Agent(AbstractAgent):
             total_reward = 0 ### KH: Added missing
             done = False
 
-            while (not done and step_in_ep < max_step_per_episode): ### KH: reset every 200 steps
+            while (not done and step_in_ep < max_step_per_episode and global_step < self.test_step): ### KH: reset every 200 steps
 
                 global_step += 1
                 step_in_ep += 1
