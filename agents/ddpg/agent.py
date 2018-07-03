@@ -27,7 +27,7 @@ class Agent(AbstractAgent):
         super(Agent, self).__init__(env)
         logger.info("DDPG Agent")
 
-        self.action_dim = action_dim(env.action_space)
+        self.action_dim = action_dim(env.action_space) ### KH: for continuous action task
         self.obs_dim = observation_dim(env.observation_space)
         self.action_max = env.action_space.high ### KH: DDPG action bound
         self.action_min = env.action_space.low  ### KH: DDPG action bound
@@ -72,7 +72,6 @@ class Agent(AbstractAgent):
                 action = self.get_action(obs, global_step)
 
                 obs_next, reward, done, _ = self.env.step(action)
-                reward = reward
 
                 self.train_agent(obs, action, reward, obs_next, done)
 
@@ -108,7 +107,6 @@ class Agent(AbstractAgent):
                 action = self.get_action(obs, global_step, False)
 
                 obs_next, reward, done, _ = self.env.step(action)
-                reward = reward
 
                 if FLAGS.gui:
                     self.env.render()
@@ -134,7 +132,7 @@ class Agent(AbstractAgent):
 
     def train_agent(self, obs, action, reward, obs_next, done):
         """
-        How to use replay buffer max_step
+        How to use replay buffer
         
         1. Put sample: make tuple and put it to replay buffer #
          - self.replay_buffer.add_to_memory((s, a, r, s_, done))
