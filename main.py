@@ -10,6 +10,8 @@ import logging
 import time
 
 import gym
+import gym_maze
+
 import agents
 import config
 import logger
