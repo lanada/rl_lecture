@@ -16,52 +16,39 @@ class Agent(AbstractAgent):
 
     def __init__(self, env):
         super(Agent, self).__init__(env)
-        logger.info("Q-Learning Agent")
+        logger.info("Q-Learning Agent is created")
 
         self.action_dim = env.action_space.n
         self.obs_dim = np.power(int(env.observation_space.high[0]+1),2)
-        self.model = self.set_model()
+
+        # Make Q-table
+        self.q_table = np.zeros([self.obs_dim, self.action_dim])
+
+        # parameter setting 
+        self.gamma = .99     # discount factor  # TODO: 이거 위에 따로 글로벌로 뺄지 말지 결정 필요
+        self.lr = 0.1        # learning rate
         self.train_step = FLAGS.train_step
         self.test_step = FLAGS.test_step
 
-    def set_model(self):
-        # model = None
-        # model can be q-table or q-network
-
-        # Initialize Q table with all zeros
-        Q = np.zeros([self.obs_dim, self.action_dim])
-        # parameter setting 
-        self.gamma = .99     # discount factor
-        self.lr = 0.1        # learning rate
-        
-        return Q
-
     def learn(self):
-        logger.debug("Start Learn")
-
+        logger.debug("Start train for {} steps".format(self.train_step))
         global_step = 0
-        episode_num = 0
 
         while global_step < self.train_step:
-
-            episode_num += 1
-            step_in_ep = 0
-
             obs = self.env.reset()  # Reset environment
-            obs_flatten = int(obs[1]*(self.env.observation_space.high[0]+1) + obs[0])  # state [2,3] --> state_flatten 17 == 2+5*3
+            obs_flatten = self.flatten_obs(obs)
+            
             total_reward = 0
             done = False
 
-            while not done:
-
+            while (not done and global_step < self.train_step):
                 global_step += 1
-                step_in_ep += 1
 
                 action = self.get_action(obs_flatten, global_step)
 
                 obs_next, reward, done, _ = self.env.step(action)
-                obs_next_flatten = int(obs_next[1]*(self.env.observation_space.high[0]+1) + obs_next[0])
-                # print(obs_next_flatten, obs_next)
+                obs_next_flatten = self.flatten_obs(obs_next)
+
                 self.train_agent(obs_flatten, action, reward, obs_next_flatten, done)
 
                 if FLAGS.gui:
@@ -71,7 +58,7 @@ class Agent(AbstractAgent):
                 total_reward += reward
 
     def test(self, global_step=0):
-        logger.debug("Test step: {}".format(global_step))
+        logger.debug("Start test for {} steps".format(global_step))
 
         global_step = 0
         episode_num = 0
@@ -80,21 +67,19 @@ class Agent(AbstractAgent):
         while global_step < self.test_step:
             episode_num += 1
             step_in_ep = 0
-
-            obs = self.env.reset()  # Reset environment
-            obs_flatten = int(obs[1]*(self.env.observation_space.high[0]+1) + obs[0])  # state [2,3] --> state_flatten 17 == 2+5*3
-
             done = False
 
-            while not done:
+            obs = self.env.reset()  # Reset environment
+            obs_flatten = self.flatten_obs(obs)
 
+            while (not done and global_step < self.test_step):
                 global_step += 1
                 step_in_ep += 1
 
                 action = self.get_action(obs_flatten, global_step, False)
 
                 obs_next, reward, done, _ = self.env.step(action)
-                obs_next_flatten = int(obs_next[1]*(self.env.observation_space.high[0]+1) + obs_next[0])
+                obs_next_flatten =  self.flatten_obs(obs_next)
 
                 if FLAGS.gui:
                     self.env.render()
@@ -102,21 +87,25 @@ class Agent(AbstractAgent):
                 obs_flatten = obs_next_flatten
                 total_reward += reward
 
-        print("[ train_ep: {}, total reward: {} ]".format(episode_num, total_reward))
+        print("[ test_ep: {}, total reward: {} ]".format(episode_num, total_reward))
 
     def get_action(self, obs, global_step, train=True):
-        # 최적의 액션 선택 + Exploration (Epsilon greedy)  
 
         epsilon = 1. / ((global_step // 10) + 1)
         if np.random.rand(1) < epsilon:
             action = self.env.action_space.sample()
         else:
-            action =int(np.argmax(self.model[obs, :]))
+            action =int(np.argmax(self.q_table[obs, :]))
         return action
 
     def train_agent(self, obs, action, reward, obs_next, done):
-         # Update new state and reward from environment
-        # print(obs, action, reward,obs_next,done )
-        self.model[obs, action] = self.model[obs, action] + self.lr*(reward + self.gamma*np.max(self.model[obs_next,:]) -self.model[obs, action])
-        # print(self.model)
+        # Update new state and reward from environment
+        self.q_table[obs, action] = self.q_table[obs, action] + self.lr*(reward + self.gamma*np.max(self.q_table[obs_next,:]) -self.q_table[obs, action])
+
         return None
+
+    def flatten_obs(self, obs):
+        # Flatten obs: 
+        # obs [2,3] --> state_flatten 17 (= 2+5*3) where size of map is 5 by 5
+        ret = int(obs[1]*(self.env.observation_space.high[0]+1) + obs[0])  
+        return ret
