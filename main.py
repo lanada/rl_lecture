@@ -10,7 +10,7 @@ import logging
 import time
 
 import gym
-import gym_maze
+import gym_maze  # This is for q-learning experiment 
 
 import agents
 import config
