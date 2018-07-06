@@ -7,6 +7,7 @@ from agents.agent import AbstractAgent
 from agents.common.input import observation_dim
 import logging
 import config
+import time
 
 logger = logging.getLogger('rl.agent')
 FLAGS = config.flags.FLAGS
@@ -27,7 +28,7 @@ class Agent(AbstractAgent):
         # parameter setting 
         self.gamma = .99     # discount factor  # TODO: 이거 위에 따로 글로벌로 뺄지 말지 결정 필요
         self.lr = 0.1        # learning rate
-        self.train_step = FLAGS.train_step
+        self.train_step = FLAGS.train_step  # It should be larger than 5000
         self.test_step = FLAGS.test_step
 
     def learn(self):
@@ -62,11 +63,11 @@ class Agent(AbstractAgent):
 
         global_step = 0
         episode_num = 0
-        total_reward = 0
 
         while global_step < self.test_step:
             episode_num += 1
             step_in_ep = 0
+            total_reward = 0
             done = False
 
             obs = self.env.reset()  # Reset environment
@@ -77,22 +78,23 @@ class Agent(AbstractAgent):
                 step_in_ep += 1
 
                 action = self.get_action(obs_flatten, global_step, False)
-                # print(action)
+
                 obs_next, reward, done, _ = self.env.step(action)
                 obs_next_flatten =  self.flatten_obs(obs_next)
 
                 if FLAGS.gui:
+                    time.sleep(0.05)
                     self.env.render()
 
                 obs_flatten = obs_next_flatten
                 total_reward += reward
 
-        print("[ test_ep: {}, total reward: {} ]".format(episode_num, total_reward))
+            print("[ test_ep: {}, total reward: {} ]".format(episode_num, total_reward))
 
     def get_action(self, obs, global_step, train=True):
 
         epsilon = 1. / ((global_step // 10) + 1)
-        if np.random.rand(1) < epsilon:
+        if train and np.random.rand(1) < epsilon:
             action = self.env.action_space.sample()
         else:
             action =int(np.argmax(self.q_table[obs, :]))
