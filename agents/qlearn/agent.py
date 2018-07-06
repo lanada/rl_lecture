@@ -58,7 +58,7 @@ class Agent(AbstractAgent):
                 total_reward += reward
 
     def test(self, global_step=0):
-        logger.debug("Start test for {} steps".format(global_step))
+        logger.debug("Start test for {} steps".format(self.test_step))
 
         global_step = 0
         episode_num = 0
@@ -77,7 +77,7 @@ class Agent(AbstractAgent):
                 step_in_ep += 1
 
                 action = self.get_action(obs_flatten, global_step, False)
-
+                # print(action)
                 obs_next, reward, done, _ = self.env.step(action)
                 obs_next_flatten =  self.flatten_obs(obs_next)
 
