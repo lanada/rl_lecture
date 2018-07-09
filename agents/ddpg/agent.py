@@ -21,6 +21,10 @@ minibatch_size = 32
 pre_train_step = 3
 max_step_per_episode = 200
 
+mu = 0
+theta = 0.15
+sigma = 0.2
+
 class Agent(AbstractAgent):
 
     def __init__(self, env):
@@ -58,6 +62,7 @@ class Agent(AbstractAgent):
             obs = self.env.reset()  # Reset environment
             total_reward = 0
             done = False
+            self.noise = np.zeros(self.action_dim)
 
             while (not done and step_in_ep < max_step_per_episode and global_step < self.train_step): ### KH: reset every 200 steps
 
@@ -117,9 +122,10 @@ class Agent(AbstractAgent):
 
         action = self.model.choose_action(obs)
 
-        if train: # TODO: OU process implementation
-            variance = 0.5 * (1.0 - global_step/FLAGS.train_step)
-            action = action + np.random.normal(0, variance, size = self.action_dim) * (self.action_max - self.action_min)
+        if train:
+            scale = 1 - global_step / FLAGS.train_step
+            self.noise = self.ou_noise(self.noise)
+            action = action + self.noise * (self.action_max - self.action_min)/2 * scale
             action = np.maximum(action, self.action_min)
             action = np.minimum(action, self.action_max)
             
@@ -138,3 +144,6 @@ class Agent(AbstractAgent):
         self.model.train_network(s, a, r, ns, d, step)
 
         return None
+
+    def ou_noise(self, x):
+        return x + theta * (mu-x) + sigma * np.random.randn(self.action_dim) 
