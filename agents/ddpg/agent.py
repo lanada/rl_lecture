@@ -9,7 +9,6 @@ from agents.common.input import observation_dim
 from agents.common.input import action_dim
 from agents.common.replay_buffer import ReplayBuffer
 from agents.ddpg.DDPG_Network import DDPG
-# from agents.ddpg.DDPG_CNN import DDPG
 import logging
 import config
 
@@ -40,13 +39,8 @@ class Agent(AbstractAgent):
 
     def set_model(self):
         # model can be q-table or q-network
-
-        tf.reset_default_graph()
-        my_graph = tf.Graph()
-        with my_graph.as_default():
-            self.sess = tf.Session(graph=my_graph, config=tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True)))
-            model = DDPG(self.sess, self.obs_dim, self.action_dim, self.action_max, self.action_min)
-            self.sess.run(tf.global_variables_initializer())
+            
+        model = DDPG(self.obs_dim, self.action_dim, self.action_max, self.action_min)       
 
         return model
 
@@ -74,7 +68,7 @@ class Agent(AbstractAgent):
 
                 obs_next, reward, done, _ = self.env.step(action)
 
-                self.train_agent(obs, action, reward, obs_next, done)
+                self.train_agent(obs, action, reward, obs_next, done, global_step)
 
                 if FLAGS.gui:
                     self.env.render()
@@ -131,7 +125,7 @@ class Agent(AbstractAgent):
             
         return action
 
-    def train_agent(self, obs, action, reward, obs_next, done):
+    def train_agent(self, obs, action, reward, obs_next, done, step):
 
         self.replay_buffer.add_to_memory((obs, action, reward, obs_next, done))
 
@@ -141,6 +135,6 @@ class Agent(AbstractAgent):
         minibatch = self.replay_buffer.sample_from_memory()
         s, a, r, ns, d = map(np.array, zip(*minibatch)) 
 
-        self.model.train_network(s, a, r, ns, d)
+        self.model.train_network(s, a, r, ns, d, step)
 
         return None
