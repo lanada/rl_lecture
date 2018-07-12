@@ -8,13 +8,12 @@ import numpy as np
 import random
 import time
 
+# Environment
 import gym
-import gym_maze  # This is for q-learning experiment 
+import gym_maze 
 
+# Agent
 import agents
-import config
-
-FLAGS = config.flags.FLAGS
 
 
 def set_seed(seed):
@@ -25,16 +24,16 @@ def set_seed(seed):
 
 
 if __name__ == '__main__':
-    set_seed(FLAGS.seed)
+    set_seed(0)
 
     # Load environment
-    print('Environment: {}'.format(FLAGS.env))
-    env = gym.make(FLAGS.env)
+    print('Environment: maze-sample-5x5-v0')
+    env = gym.make('maze-sample-5x5-v0')
 
     # Load agent
-    print('Agent: {}'.format(FLAGS.agent))
-    agent = agents.load(FLAGS.agent+"/agent.py").Agent(env)
+    print('Agent: qlearn')
+    agent = agents.load("qlearn/agent.py").Agent(env)
 
-    # start learning
+    # start learning and testing
     agent.learn()
     agent.test()
