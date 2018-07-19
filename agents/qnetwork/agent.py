@@ -2,21 +2,18 @@
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-import numpy as np
-from agents.agent import AbstractAgent
-from agents.common.input import observation_dim
-
-import logging
-import config
-import time
-import sys
-
-from agents.qnetwork.NN import Q_Network
-from agents.common.replay_buffer import ReplayBuffer
 import tensorflow as tf
+import numpy as np
+import time
+from agents.agent import AbstractAgent
+from agents.qnetwork.NN import Q_Network
+from agents.common.input import observation_dim
+from agents.common.replay_buffer import ReplayBuffer
 
-logger = logging.getLogger('rl.agent')
-FLAGS = config.flags.FLAGS
+
+# parameter setting 
+train_step = 10000
+test_step = 100
 
 minibatch_size = 32
 pre_train_step = 10
@@ -26,30 +23,21 @@ class Agent(AbstractAgent):
 
     def __init__(self, env):
         super(Agent, self).__init__(env)
-        logger.info("Q-Learning Agent is created")
+        print("Q-network Agent is created")
 
         self.action_dim = env.action_space.n
         self.obs_dim = np.power(int(env.observation_space.high[0]+1),2)
 
-        # parameter setting 
-        self.train_step = FLAGS.train_step  
-        self.test_step = FLAGS.test_step
+        self.model = Q_Network(self.obs_dim, self.action_dim, train_step)
 
-        self.model = self.set_model()
-            
         self.replay_buffer = ReplayBuffer(minibatch_size=minibatch_size)
             
-    def set_model(self):
-
-        model = Q_Network(self.obs_dim, self.action_dim, self.train_step)
-        return model
-
     def learn(self):
-        logger.debug("Start train for {} steps".format(self.train_step))
+        print("Start train for {} steps".format(train_step))
         global_step = 0
         episode_num = 0
 
-        while global_step < self.train_step:
+        while global_step < train_step:
             episode_num += 1
             step_in_ep = 0
             
@@ -59,7 +47,7 @@ class Agent(AbstractAgent):
             total_reward = 0
             done = False
 
-            while (not done and global_step < self.train_step):
+            while (not done and global_step < train_step):
 
                 global_step += 1
                 step_in_ep += 1
@@ -67,7 +55,7 @@ class Agent(AbstractAgent):
                 action = self.get_action(obs, global_step)
 
                 # For debugging
-                if global_step % 10000 == 0:
+                if global_step % 1000 == 0:
                     self.draw_current_optimal_actions(global_step)
 
                 obs_v_next, reward, done, _ = self.env.step(action)
@@ -75,21 +63,21 @@ class Agent(AbstractAgent):
 
                 self.train_agent(obs, action, reward, obs_next, done, global_step)
 
-                # if FLAGS.gui:
-                #     self.env.render()
+                # GUI
+                # self.env.render()
 
                 obs = obs_next
                 total_reward += reward
 
     def test(self, global_step=0):
-        logger.debug("Start test for {} steps".format(self.test_step))
+        print("Start test for {} steps".format(test_step))
 
         global_step = 0
         episode_num = 0
 
         self.draw_current_optimal_actions(0)
         
-        while global_step < self.test_step:
+        while global_step < test_step:
             episode_num += 1
             step_in_ep = 0
             total_reward = 0
@@ -98,7 +86,7 @@ class Agent(AbstractAgent):
             obs_v = self.env.reset()  # Reset environment
             obs = self.one_hot(obs_v)
 
-            while (not done and global_step < self.test_step):
+            while (not done and global_step < test_step):
 
                 global_step += 1
                 step_in_ep += 1
@@ -108,9 +96,9 @@ class Agent(AbstractAgent):
                 obs_v_next, reward, done, _ = self.env.step(action)
                 obs_next = self.one_hot(obs_v_next)
 
-                if FLAGS.gui:
-                    self.env.render()
-                    # time.sleep(0.2)
+                # GUI
+                time.sleep(0.05)
+                self.env.render()
 
                 obs = obs_next
                 total_reward += reward
@@ -121,7 +109,7 @@ class Agent(AbstractAgent):
 
         eps_min = 0.1
         eps_max = 1.0
-        eps_decay_steps = self.train_step
+        eps_decay_steps = train_step
         epsilon = max(eps_min, eps_max - (eps_max - eps_min)*global_step/eps_decay_steps)
 
         if train and np.random.rand(1) < epsilon:
@@ -144,7 +132,7 @@ class Agent(AbstractAgent):
         self.model.train_network(s, a, r, s_, done)
 
         if global_step % target_update_period == 0:
-            self.model.copy_to_target()
+            self.model.update_target()
 
         return
 
@@ -161,7 +149,6 @@ class Agent(AbstractAgent):
             row = ""
             for j in range(idx):
                 row = row + "| {} ".format(directions[self.model.get_action(np.eye(self.obs_dim)[int(idx*i+j)])]) # one-hot
-                # row = row + "| {} ".format(directions[self.model.act([j,i], 0, False)]) # tuple
             row = row + "|"
             print(row)
         print("----"*idx+"-")
