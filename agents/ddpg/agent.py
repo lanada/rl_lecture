@@ -9,7 +9,6 @@ from agents.common.input import observation_dim
 from agents.common.input import action_dim
 from agents.common.replay_buffer import ReplayBuffer
 from agents.ddpg.DDPG_Network import DDPG
-# from agents.ddpg.DDPG_CNN import DDPG
 import logging
 import config
 
@@ -21,6 +20,10 @@ FLAGS = config.flags.FLAGS
 minibatch_size = 32
 pre_train_step = 3
 max_step_per_episode = 200
+
+mu = 0
+theta = 0.15
+sigma = 0.2
 
 class Agent(AbstractAgent):
 
@@ -40,13 +43,8 @@ class Agent(AbstractAgent):
 
     def set_model(self):
         # model can be q-table or q-network
-
-        tf.reset_default_graph()
-        my_graph = tf.Graph()
-        with my_graph.as_default():
-            self.sess = tf.Session(graph=my_graph, config=tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True)))
-            model = DDPG(self.sess, self.obs_dim, self.action_dim, self.action_max, self.action_min)
-            self.sess.run(tf.global_variables_initializer())
+            
+        model = DDPG(self.obs_dim, self.action_dim, self.action_max, self.action_min)       
 
         return model
 
@@ -64,6 +62,7 @@ class Agent(AbstractAgent):
             obs = self.env.reset()  # Reset environment
             total_reward = 0
             done = False
+            self.noise = np.zeros(self.action_dim)
 
             while (not done and step_in_ep < max_step_per_episode and global_step < self.train_step): ### KH: reset every 200 steps
 
@@ -74,7 +73,7 @@ class Agent(AbstractAgent):
 
                 obs_next, reward, done, _ = self.env.step(action)
 
-                self.train_agent(obs, action, reward, obs_next, done)
+                self.train_agent(obs, action, reward, obs_next, done, global_step)
 
                 if FLAGS.gui:
                     self.env.render()
@@ -123,15 +122,16 @@ class Agent(AbstractAgent):
 
         action = self.model.choose_action(obs)
 
-        if train: # TODO: OU process implementation
-            variance = 0.5 * (1.0 - global_step/FLAGS.train_step)
-            action = action + np.random.normal(0, variance, size = self.action_dim) * (self.action_max - self.action_min)
+        if train:
+            scale = 1 - global_step / FLAGS.train_step
+            self.noise = self.ou_noise(self.noise)
+            action = action + self.noise * (self.action_max - self.action_min)/2 * scale
             action = np.maximum(action, self.action_min)
             action = np.minimum(action, self.action_max)
             
         return action
 
-    def train_agent(self, obs, action, reward, obs_next, done):
+    def train_agent(self, obs, action, reward, obs_next, done, step):
 
         self.replay_buffer.add_to_memory((obs, action, reward, obs_next, done))
 
@@ -141,6 +141,9 @@ class Agent(AbstractAgent):
         minibatch = self.replay_buffer.sample_from_memory()
         s, a, r, ns, d = map(np.array, zip(*minibatch)) 
 
-        self.model.train_network(s, a, r, ns, d)
+        self.model.train_network(s, a, r, ns, d, step)
 
         return None
+
+    def ou_noise(self, x):
+        return x + theta * (mu-x) + sigma * np.random.randn(self.action_dim) 
