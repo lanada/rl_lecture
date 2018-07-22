@@ -9,13 +9,11 @@ from agents.common.input import observation_dim
 from agents.common.input import action_dim
 from agents.common.replay_buffer import ReplayBuffer
 from agents.ddpg.DDPG_Network import DDPG
-import logging
-import config
 
-logger = logging.getLogger('rl.agent')
-FLAGS = config.flags.FLAGS
 
 #### HYPER PARAMETERS ####
+train_step = 5000
+test_step = 1000
 
 minibatch_size = 32
 pre_train_step = 3
@@ -29,7 +27,7 @@ class Agent(AbstractAgent):
 
     def __init__(self, env):
         super(Agent, self).__init__(env)
-        logger.info("DDPG Agent")
+        print("DDPG Agent")
 
         self.action_dim = action_dim(env.action_space) ### KH: for continuous action task
         self.obs_dim = observation_dim(env.observation_space)
@@ -37,9 +35,6 @@ class Agent(AbstractAgent):
         self.action_min = env.action_space.low  ### KH: DDPG action bound
         self.model = self.set_model()
         self.replay_buffer = ReplayBuffer(minibatch_size=minibatch_size) 
-
-        self.train_step = FLAGS.train_step
-        self.test_step = FLAGS.test_step
 
     def set_model(self):
         # model can be q-table or q-network
@@ -49,12 +44,12 @@ class Agent(AbstractAgent):
         return model
 
     def learn(self):
-        logger.debug("Start Learn")
+        print("Start Learn")
 
         global_step = 0
         episode_num = 0
 
-        while global_step < self.train_step:
+        while global_step < train_step:
 
             episode_num += 1
             step_in_ep = 0
@@ -64,7 +59,7 @@ class Agent(AbstractAgent):
             done = False
             self.noise = np.zeros(self.action_dim)
 
-            while (not done and step_in_ep < max_step_per_episode and global_step < self.train_step): ### KH: reset every 200 steps
+            while (not done and step_in_ep < max_step_per_episode and global_step < train_step): ### KH: reset every 200 steps
 
                 global_step += 1
                 step_in_ep += 1
@@ -75,8 +70,8 @@ class Agent(AbstractAgent):
 
                 self.train_agent(obs, action, reward, obs_next, done, global_step)
 
-                if FLAGS.gui:
-                    self.env.render()
+                # GUI
+                self.env.render()
 
                 obs = obs_next
                 total_reward += reward
@@ -84,13 +79,13 @@ class Agent(AbstractAgent):
             print("[ train_ep: {}, total reward: {} ]".format(episode_num, total_reward)) ### KH: train result
 
     def test(self, global_step=0):
-        logger.debug("Test step: {}".format(global_step))
+        print("Test step: {}".format(global_step))
 
         global_step = 0
         episode_num = 0
         total_reward = 0
 
-        while global_step < self.test_step:
+        while global_step < test_step:
 
             episode_num += 1
             step_in_ep = 0
@@ -99,7 +94,7 @@ class Agent(AbstractAgent):
             total_reward = 0 ### KH: Added missing
             done = False
 
-            while (not done and step_in_ep < max_step_per_episode and global_step < self.test_step): ### KH: reset every 200 steps
+            while (not done and step_in_ep < max_step_per_episode and global_step < test_step): ### KH: reset every 200 steps
 
                 global_step += 1
                 step_in_ep += 1
@@ -108,8 +103,8 @@ class Agent(AbstractAgent):
 
                 obs_next, reward, done, _ = self.env.step(action)
 
-                if FLAGS.gui:
-                    self.env.render()
+                # GUI
+                self.env.render()
 
                 obs = obs_next
                 total_reward += reward
@@ -123,7 +118,7 @@ class Agent(AbstractAgent):
         action = self.model.choose_action(obs)
 
         if train:
-            scale = 1 - global_step / FLAGS.train_step
+            scale = 1 - global_step / train_step
             self.noise = self.ou_noise(self.noise)
             action = action + self.noise * (self.action_max - self.action_min)/2 * scale
             action = np.maximum(action, self.action_min)
