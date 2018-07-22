@@ -24,7 +24,7 @@ class NeuralNetwork:
         self.Y = tf.placeholder(tf.float32, [None, self.output_dim])   
 
         # Generate neural network
-        self.network = self.generate_network()
+        self.network = self.generate_network(self.X)
 
         # Make flow
         error = tf.square(self.Y - self.network)
@@ -36,11 +36,11 @@ class NeuralNetwork:
         # Initialize
         self.sess.run(tf.global_variables_initializer())
 
-    def generate_network(self):
+    def generate_network(self, X):
         n_hidden1 = 32
         n_hidden2 = 32
 
-        hidden1 = tf.layers.dense(self.X, n_hidden1, activation=tf.nn.relu)
+        hidden1 = tf.layers.dense(X, n_hidden1, activation=tf.nn.relu)
         hidden2 = tf.layers.dense(hidden1, n_hidden2, activation=tf.nn.relu)
         output = tf.layers.dense(hidden2, self.output_dim)
 
