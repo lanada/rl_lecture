@@ -4,7 +4,7 @@ from __future__ import division
 from __future__ import absolute_import
 import tensorflow as tf
 import numpy as np
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 import time
 
@@ -58,12 +58,16 @@ class NeuralNetwork:
         result, loss = self.sess.run([self.network, self.loss], feed_dict={self.X: x_data, self.Y: y_data})
         print("\nLoss: ", loss)
 
-        # plt.plot(x_data, result)
-        # plt.show()
+        t = np.arange(0.0, 2*np.pi, 0.01)
+        s = np.sin(t)
+        plt.plot(t, s)
+
+        plt.plot(x_data, result, 'ro')
+        plt.show()
 
 if __name__ == '__main__':
     # Generate training data 
-    x_train_data = np.random.random([100, 1]) * 2 * np.pi
+    x_train_data = np.random.random([500, 1]) * 2 * np.pi
     y_train_data = np.sin(x_train_data)
     # Generat test data
     x_test_data = np.random.random([50, 1]) * 2 * np.pi
