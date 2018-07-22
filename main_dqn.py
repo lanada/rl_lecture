@@ -27,12 +27,12 @@ if __name__ == '__main__':
     set_seed(0)
 
     # Load environment
-    print('Environment: maze-sample-3x3-v0')
-    env = gym.make('maze-sample-3x3-v0')
+    print('Environment: Seaquest-v4')
+    env = gym.make('Seaquest-v4')
 
     # Load agent
-    print('Agent: qnetwork')
-    agent = agents.load("qnetwork/agent.py").Agent(env)
+    print('Agent: dqn')
+    agent = agents.load("dqn/agent.py").Agent(env)
 
     # start learning and testing
     agent.learn()
