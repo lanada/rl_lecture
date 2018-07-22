@@ -17,10 +17,16 @@ lr_actor = 1e-3   # learning rate for the actor
 
 tau = 1e-2  # soft target update rate
 
+file_name = FLAGS.agent + FLAGS.env
+save_file = "./results/nn/" + file_name
+load_file = "./results/nn/" + file_name + '-5000'
+
 class DDPG:
-    def __init__(self, sess, state_dim, action_dim, action_max, action_min):
-        
-        self.sess = sess
+    def __init__(self,state_dim, action_dim, action_max, action_min):
+
+        tf.reset_default_graph()
+        self.sess = tf.Session(config=tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True)))
+
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.action_max = float(action_max)
@@ -55,12 +61,17 @@ class DDPG:
 
         self.soft_target_update = [[tf.assign(ta, (1-tau) * ta + tau * a), tf.assign(tc, (1-tau) * tc + tau * c)]
                                     for a, ta, c, tc in zip(self.a_params, self.ta_params, self.c_params, self.tc_params)]
+
+        self.sess.run(tf.global_variables_initializer())
+        self.saver = tf.train.Saver()
+        if not FLAGS.train:
+            self.saver.restore(self.sess, load_file)
         
 
     def choose_action(self, state):
         return self.sess.run(self.action, feed_dict = {self.state_ph: state[None]})[0]
 
-    def train_network(self, state, action, reward, next_state, done):
+    def train_network(self, state, action, reward, next_state, done, step):
 
         self.sess.run(self.train_critic, feed_dict = {self.state_ph: state,
                                                       self.action: action ,
@@ -69,6 +80,9 @@ class DDPG:
                                                       self.done_ph: done})
         self.sess.run(self.train_actor, feed_dict = {self.state_ph: state})
         self.sess.run(self.soft_target_update)
+
+        if step % 1000 == 0:
+            self.saver.save(self.sess, save_file, step)
 
     def generate_critic_network(self, state, action, trainable):
 
