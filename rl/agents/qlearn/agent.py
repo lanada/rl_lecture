@@ -49,7 +49,7 @@ class Agent(AbstractAgent):
                 self.train_agent(obs, action, reward, obs_next, done)
                 
                 # GUI    
-                # self.env.render()
+                self.env.render()
 
                 obs = obs_next
 

@@ -13,7 +13,7 @@ from agents.common.replay_buffer import ReplayBuffer
 
 # parameter setting 
 train_step = 10000
-test_step = 100
+test_step = 50
 
 minibatch_size = 32
 pre_train_step = 10
