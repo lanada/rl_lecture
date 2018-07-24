@@ -15,7 +15,7 @@ class Agent(AbstractAgent):
         print("Q-Learning Agent is created")
 
         self.train_step = 5000
-        self.test_step = 200
+        self.test_step = 60
 
         # hyper parameter setting 
         self.df = .99   # discount factor
