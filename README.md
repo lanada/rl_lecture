@@ -1,3 +1,15 @@
 # Reinforcement Learning code in LANADA
 
 This is repository for LANADA.
+
+## requirements
+gym==0.10.5
+matplotlib==2.2.4
+tensorflow==1.14.0
+
+After install above, Install gym-maze.
+```
+git clone https://github.com/lanada/gym-maze.git
+cd gym-maze
+python setup.py install
+```
