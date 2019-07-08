@@ -59,7 +59,7 @@ class Q_Network:
     def get_action(self, state):
 
         q_values = self.online_network.eval(session=self.sess, feed_dict={self.state_ph: [state]})
-        return np.argmax(q_values)
+        return int(np.argmax(q_values))
 
     def train_network(self, state, action, reward, state_next, done):
 
