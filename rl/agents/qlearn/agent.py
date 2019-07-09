@@ -89,19 +89,14 @@ class Agent(AbstractAgent):
 
     def get_action(self, obs, global_step, train=True):
 
-        epsilon = 1. / ((global_step // 10) + 1)
-        if train and np.random.rand(1) < epsilon:  # Exploration
-            action = self.env.action_space.sample()
-        else:  # Select best action
-            action =int(np.argmax(self.q_table[obs, :]))
-        return action
+        # Fill out this part
+
+        random_action = self.env.action_space.sample()
+        return random_action
 
     def train_agent(self, obs, action, reward, obs_next, done):
 
-        self.q_table[obs, action] = \
-            (1-self.lr) * self.q_table[obs, action] \
-            + self.lr * (reward + self.df * np.max(self.q_table[obs_next,:]))
-
+        # Fill out this part
         return None
 
     def vec2scalar(self, obs):
