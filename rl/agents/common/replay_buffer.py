@@ -13,7 +13,7 @@ class ReplayBuffer:
         self.replay_memory.append(experience)
 
     def sample_from_memory(self):
-        return random.sample(self.replay_memory, self.minibatch_size)
+        # TODO fill here
 
     def erase(self):
         self.replay_memory.popleft()

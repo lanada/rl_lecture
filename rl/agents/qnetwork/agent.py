@@ -131,7 +131,7 @@ class Agent(AbstractAgent):
         s, a, r, s_, done = map(np.array, zip(*minibatch))
         self.model.train_network(s, a, r, s_, done)
 
-        if global_step % target_update_period == 0:
+        if False: # TODO fill here
             self.model.update_target()
 
         return

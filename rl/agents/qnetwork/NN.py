@@ -36,7 +36,7 @@ class Q_Network:
         q_value = tf.reduce_sum(self.online_network * tf.one_hot(self.action_ph, action_dim),
                                 axis=1, keep_dims=True)
         error = tf.square(self.q_target_ph - q_value)
-        loss = tf.reduce_mean(error)
+        loss = None # TODO fill here
         optimizer = tf.train.AdamOptimizer(learning_rate)
         self.train_online_network = optimizer.minimize(loss)
 
@@ -50,22 +50,21 @@ class Q_Network:
 
     def generate_network(self, state_ph):
 
-        hidden1 = tf.layers.dense(state_ph, n_hidden1, activation=tf.nn.relu)
-        hidden2 = tf.layers.dense(hidden1, n_hidden2, activation=tf.nn.relu)
-        output = tf.layers.dense(hidden2, self.action_dim)
+        # TODO fill here
 
         return output
 
     def get_action(self, state):
 
         q_values = self.online_network.eval(session=self.sess, feed_dict={self.state_ph: [state]})
-        return int(np.argmax(q_values))
+        return None # TODO fill here
 
     def train_network(self, state, action, reward, state_next, done):
 
         next_q_values = self.target_network.eval(session=self.sess, feed_dict={self.state_ph: state_next})
         max_next_q_values = np.max(next_q_values, axis=1, keepdims=True).squeeze()
-        q_target = (reward + (1.0 - done) * gamma * max_next_q_values).reshape((-1, 1))
+        # q_target = (_____ + (1.0 - done) * _____ * _____).reshape((-1, 1))
+        # TODO fill here
 
         self.sess.run(self.train_online_network, 
                         feed_dict={self.state_ph: state, self.action_ph: action, self.q_target_ph: q_target})
