@@ -18,3 +18,8 @@ git clone https://github.com/lanada/gym-maze.git
 cd gym-maze
 python setup.py install
 ```
+
+Virtual environment file
+```
+https://www.dropbox.com/s/ciszxrkjnn2ou97/ubuntu-rl.ova?dl=0
+```
